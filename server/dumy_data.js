@@ -4,18 +4,21 @@ const users = [
     display_name: 'Rowan d\'Auria',
     username: 'rowandauria',
     email: 'rowandummy@gmail.com',
+    password: 'password',
   },
   {
     id: 2,
     display_name: 'John Smith',
     username: 'js',
     email: 'js@gmail.com',
+    password: 'x',
   },
   {
     id: 3,
     display_name: 'Jane Doe',
     username: 'jd',
     email: 'jd@gmail.com',
+    password: 'y',
   },
 ];
 
