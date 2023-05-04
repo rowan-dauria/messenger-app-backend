@@ -4,7 +4,14 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
 const de = require('dotenv');
+
+const messagesRouter = require('./auth_router/messages');
+const usersRouter = require('./auth_router/users');
+const chatsRouter = require('./auth_router/chats');
+
 const dummyData = require('./dumy_data');
+
+de.config();
 
 const authenticatedUser = (email, password) => { // returns boolean
   // check if username and password match the one we have in records.
@@ -15,15 +22,9 @@ const authenticatedUser = (email, password) => { // returns boolean
   return auth;
 };
 
-de.config();
-
 const PORT = 3001;
-
 const app = express();
-
 app.use(express.json());
-
-console.log(process.env.SECRET);
 
 app.use('/', session({ secret: process.env.SECRET, resave: true, saveUninitialized: true }));
 
@@ -47,36 +48,16 @@ app.use('/auth/*', (req, res, next) => {
   return jwt.verify(token, 'access', (err, user) => {
     if (!err) {
       req.user = user;
-      console.log('request verified');
       return next();
     }
     return res.status(403).json({ message: 'Failed to authenticate the request' });
   });
 });
-
-app.get('/auth/test', (req, res) => {
-  console.log('received an authenticated request');
-  res.status(200).send('test!!');
-});
-
-app.post('/messages', (req, res) => {
-  const message = req.body;
-  dummyData.messages.push(message);
-  res.status(200).json(dummyData.messages[dummyData.messages.length - 1]);
-});
-
-app.get('/chats', (req, res) => {
-  res.status(200).json(dummyData.chats);
-});
-
-app.get('/chats/:id', (req, res) => {
-  const chatID = parseInt(req.params.id, 10);
-  res.status(200).json(dummyData.messages.filter((message) => message.chat_id === chatID));
-});
-
-app.get('/users', (req, res) => {
-  res.status(200).json(dummyData.users);
-});
+/* eslint-disable import/newline-after-import */
+app.use('/auth/users', usersRouter);
+app.use('/auth/chats', chatsRouter);
+app.use('/auth/messages', messagesRouter);
+/* eslint-enable import/newline-after-import */
 
 app.listen(PORT, () => {
   console.log(`The server listening on ${PORT}`);
