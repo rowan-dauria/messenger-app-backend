@@ -9,18 +9,9 @@ const messagesRouter = require('./auth_router/messages');
 const usersRouter = require('./auth_router/users');
 const chatsRouter = require('./auth_router/chats');
 
-const dummyData = require('./dumy_data');
+const authenticatedUser = require('./utils');
 
 de.config();
-
-const authenticatedUser = (email, password) => { // returns boolean
-  // check if username and password match the one we have in records.
-  let auth = false;
-  dummyData.users.forEach((user) => {
-    if (user.email === email && user.password === password) auth = true;
-  });
-  return auth;
-};
 
 const PORT = 3001;
 const app = express();
@@ -28,18 +19,19 @@ app.use(express.json());
 
 app.use('/', session({ secret: process.env.SECRET, resave: true, saveUninitialized: true }));
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) return res.status(422).send('username or password not provided');
 
-  if (!authenticatedUser(email, password)) {
+  const user = await authenticatedUser(email, password);
+  if (!user) {
     return res.status(403).send('Incorrect username or password');
   }
   const accessToken = jwt.sign({ data: password }, 'access', { expiresIn: 60 * 60 });
 
-  req.session.authorization = { accessToken, email };
-  return res.status(200).send('User logged in');
+  req.session.authorization = { accessToken, email, user_id: user.id };
+  return res.status(200).json(user);
 });
 
 app.use('/auth/*', (req, res, next) => {
