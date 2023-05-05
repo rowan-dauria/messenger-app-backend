@@ -5,7 +5,7 @@ const chatsRouter = express.Router();
 
 chatsRouter.get('/', async (req, res) => {
   const result = await pgPool.query(
-    'SELECT id, created_at, display_name FROM chats ORDER BY id ASC',
+    'SELECT id, name, members FROM chats ORDER BY id ASC',
   );
   res.status(200).json(result.rows);
 });
@@ -13,7 +13,7 @@ chatsRouter.get('/', async (req, res) => {
 chatsRouter.get('/:id', async (req, res) => {
   const { id } = req.params;
   const result = await pgPool.query(
-    'SELECT id, created_at, display_name FROM chats WHERE id = $1',
+    'SELECT id, name, members FROM chats WHERE id = $1',
     [id],
   );
   res.status(200).json(result.rows);

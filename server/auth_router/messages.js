@@ -5,7 +5,7 @@ const messagesRouter = express.Router();
 
 messagesRouter.get('/', async (req, res) => {
   const result = await pgPool.query(
-    'SELECT id, created_at, display_name FROM messages ORDER BY id ASC',
+    'SELECT id, created_at, content, created_by FROM messages ORDER BY id ASC',
   );
   res.status(200).json(result.rows);
 });
@@ -13,7 +13,7 @@ messagesRouter.get('/', async (req, res) => {
 messagesRouter.get('/:id', async (req, res) => {
   const { id } = req.params;
   const result = await pgPool.query(
-    'SELECT id, created_at, display_name FROM messages WHERE id = $1',
+    'SELECT id, created_at, content, created_by FROM messages WHERE id = $1',
     [id],
   );
   res.status(200).json(result.rows);
