@@ -80,8 +80,7 @@ app.use('/auth/*', (req, res, next) => {
     return res.status(403).json({ message: 'Failed to authenticate the request' });
   });
 });
-/* eslint-disable import/newline-after-import */
+
 app.use('/auth/users', usersRouter);
 app.use('/auth/chats', chatsRouter);
 app.use('/auth/messages', messagesRouter);
-/* eslint-enable import/newline-after-import */
