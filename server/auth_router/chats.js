@@ -28,4 +28,11 @@ chatsRouter.post('/', async (req, res) => {
   res.status(200).json(result.rows);
 });
 
-module.exports = chatsRouter;
+// takes the socket as argument
+function handleChatEvents(socket) {
+  socket.on('chats join', ({ chatIds }) => {
+    socket.join(chatIds);
+  });
+}
+
+module.exports = { handleChatEvents, chatsRouter };

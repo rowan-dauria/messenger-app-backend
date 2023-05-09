@@ -45,4 +45,18 @@ messagesRouter.post('/', async (req, res) => {
   }
 });
 
-module.exports = messagesRouter;
+function handleMessageEvents(socket) {
+  socket.on('message to server', async (message) => {
+    const createdBy = message.created_by;
+    const chatID = message.chat_id;
+    const { content } = message;
+    const result = await pgPool.query(
+      'INSERT INTO messages (created_by, chat_id, content) VALUES ($1, $2, $3) RETURNING *',
+      [createdBy, chatID, content],
+    );
+    console.log(result);
+    socket.to(chatID).emit('message to client', result);
+  });
+}
+
+module.exports = { handleMessageEvents, messagesRouter };
