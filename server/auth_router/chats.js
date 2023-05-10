@@ -5,7 +5,8 @@ const chatsRouter = express.Router();
 
 chatsRouter.get('/', async (req, res) => {
   const result = await pgPool.query(
-    'SELECT id, name, members FROM chats ORDER BY id ASC',
+    'SELECT * FROM chats WHERE $1 = ANY(members) ORDER BY id ASC',
+    [req.session.authorization.userID],
   );
   res.status(200).json(result.rows);
 });
