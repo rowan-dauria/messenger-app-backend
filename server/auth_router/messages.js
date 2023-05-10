@@ -54,7 +54,6 @@ function handleMessageEvents(socket) {
       'INSERT INTO messages (created_by, chat_id, content) VALUES ($1, $2, $3) RETURNING *',
       [createdBy, chatID, content],
     );
-    console.log(result);
     socket.to(chatID).emit('message to client', result);
   });
 }
