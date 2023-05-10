@@ -65,16 +65,15 @@ app.post('/login', async (req, res) => {
   }
   const accessToken = jwt.sign({ data: password }, 'access', { expiresIn: 60 * 60 });
 
-  req.session.authorization = { accessToken, email, user_id: user.id };
-  return res.status(200).json({ user, accessToken });
+  req.session.authorization = { accessToken, email, userID: user.id };
+  return res.status(200).json({ user });
 });
 
 app.use('/auth/*', (req, res, next) => {
   if (!req.session.authorization) return res.status(403).json({ message: 'Access denied' });
   const token = req.session.authorization.accessToken;
-  return jwt.verify(token, 'access', (err, user) => {
+  return jwt.verify(token, 'access', (err) => {
     if (!err) {
-      req.user = user;
       return next();
     }
     return res.status(403).json({ message: 'Failed to authenticate the request' });
