@@ -22,7 +22,6 @@ usersRouter.get('/:id', async (req, res, next) => {
   }
 }, async (req, res) => {
   const { userID } = req.session.authorization;
-  console.log(userID);
   const result = await pgPool.query(
     'SELECT id, display_name, email FROM users WHERE id = $1',
     [userID],
