@@ -4,11 +4,7 @@ const { Pool } = require('pg');
 de.config();
 
 const pool = new Pool({
-  user: process.env.PG_USERNAME,
-  host: 'localhost',
-  database: 'messenger_db',
-  password: process.env.PG_PASSWORD,
-  port: process.env.PG_PORT,
+  connectionString: `${process.env.CONNECTION_STRING}?sslmode=require`,
 });
 
 module.exports = pool;
