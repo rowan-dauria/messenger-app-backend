@@ -30,6 +30,12 @@ const sessionMiddleware = session({
   resave: true, // ? should maybe be changed to false?
   saveUninitialized: true, // ? should maybe be changed to false?
 });
+
+// The  The default server-side session storage, MemoryStore,
+// is purposely not designed for a production environment.
+// It will leak memory under most conditions, does not scale past a single process,
+// and is meant for debugging and developing. For a list of stores, see compatible session stores.
+// https://www.npmjs.com/package/express-session#compatible-session-stores
 app.use('/', sessionMiddleware);
 io.engine.use(sessionMiddleware);
 
@@ -44,7 +50,7 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  console.log(`user connected, socket.id: ${socket.id}`);
 
   handleChatEvents(socket);
   handleMessageEvents(socket);
@@ -63,7 +69,11 @@ app.post('/login', async (req, res) => {
   if (!user) {
     return res.status(403).send('Incorrect username or password');
   }
-  const accessToken = jwt.sign({ data: password }, 'access', { expiresIn: 60 * 60 });
+  const accessToken = jwt.sign(
+    { data: password },
+    process.env.JWT_SECRET,
+    { expiresIn: 60 * 60 },
+  );
 
   req.session.authorization = { accessToken, email, userID: user.id };
   return res.status(200).json({ user });
@@ -72,12 +82,16 @@ app.post('/login', async (req, res) => {
 app.use('/auth/*', (req, res, next) => {
   if (!req.session.authorization) return res.status(403).json({ message: 'Access denied' });
   const token = req.session.authorization.accessToken;
-  return jwt.verify(token, 'access', (err) => {
-    if (!err) {
-      return next();
-    }
-    return res.status(403).json({ message: 'Failed to authenticate the request' });
-  });
+  return jwt.verify(
+    token,
+    process.env.JWT_SECRET,
+    (err) => {
+      if (!err) {
+        return next();
+      }
+      return res.status(403).json({ message: 'Failed to authenticate the request' });
+    },
+  );
 });
 
 app.use('/auth/users', usersRouter);
