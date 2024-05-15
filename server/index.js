@@ -66,6 +66,23 @@ app.post('/login', async (req, res) => {
   if (!email || !password) return res.status(422).send('username or password not provided');
 
   const user = await authenticatedUser(email, password);
+  // If user can't be found, respond with error
+  if (!user) {
+    return res.status(403).send('Incorrect username or password');
+  }
+  // If user is found, create a token for the session that will expire after 1hr
+  // The token is signed with the user's password and the JWT secret
+  // This allows requests to be made to /auth/* endpoints
+  const accessToken = jwt.sign(
+    { data: password },
+    process.env.JWT_SECRET,
+    { expiresIn: 60 * 60 },
+  );
+
+  req.session.authorization = { accessToken, email, userID: user.id };
+  return res.status(200).json({ user });
+});
+
   if (!user) {
     return res.status(403).send('Incorrect username or password');
   }
