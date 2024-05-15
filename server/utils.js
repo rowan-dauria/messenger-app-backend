@@ -13,4 +13,49 @@ async function authenticatedUser(email, password) {
   return false;
 }
 
-module.exports = authenticatedUser;
+async function userExists(email) {
+  const userResult = await pgPool.query(
+    'SELECT email FROM users WHERE email = $1',
+    [email],
+  );
+  const userNumber = userResult.rowCount;
+  if (userNumber === 1) return true;
+  if (userNumber === 0) return false;
+  throw new Error('Multiple users with the same email found');
+}
+
+class UserExistsError extends Error {
+  constructor(email) {
+    super();
+    this.message = `User already exists with email ${email}`;
+  }
+}
+
+async function insertUser(displayName, email, password) {
+  const userExistsBool = await userExists(email);
+
+  if (userExistsBool) throw new UserExistsError(email);
+
+  // hash password when inserting into database.
+  const result = await pgPool.query(
+    'INSERT INTO users (display_name, email, "password") VALUES ($1, $2, crypt($3, "password")) RETURNING display_name, email',
+    [displayName, email, password],
+  );
+
+  if (result.rows.length === 1) return result.rows[0];
+  throw new Error('Error occurred whilst adding user to database');
+}
+
+async function testDbConnection() {
+  const rows = await pgPool.query(
+    'SELECT id, email, display_name FROM users',
+  );
+  return rows;
+}
+
+module.exports = {
+  authenticatedUser,
+  testDbConnection,
+  insertUser,
+  UserExistsError,
+};
