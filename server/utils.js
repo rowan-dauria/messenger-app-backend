@@ -35,7 +35,7 @@ async function insertUser(displayName, email, password) {
 
   // hash password when inserting into database.
   const result = await pgPool.query(
-    'INSERT INTO users (display_name, email, password) VALUES ($1, $2, crypt($3, gen_salt(\'md5\'))) RETURNING display_name, email',
+    'INSERT INTO users (display_name, email, password) VALUES ($1, $2, crypt($3, gen_salt(\'md5\'))) RETURNING id, display_name, email',
     [displayName, email, password],
   );
 
