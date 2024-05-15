@@ -102,9 +102,10 @@ app.post('/new-user', async (req, res) => {
   }
 
   const user = await authenticatedUser(email, password);
-  // If user can't be found, respond with error
+  // If user can't be found, respond with error,
+  // which hopefully shouldn't happen because it has just been made
   if (!user) {
-    return res.status(403).send('Incorrect username or password');
+    return res.status(500).json({ message: 'An error occured whilst validating new user credentials' });
   }
   // If user is found, create a token for the session that will expire after 1hr
   // The token is signed with the user's password and the JWT secret
